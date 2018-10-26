@@ -1,0 +1,37 @@
+.App {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  margin: 20px 0 0 20px;
+  text-align: center;
+}
+.board {
+  border: 1px solid #ddd;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+}
+.example {
+}
+
+.tile {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  position: relative;
+
+  &--blank {
+    background: #f3f3f3;
+    cursor: default;
+  }
+  &__order {
+    color: #fff;
+    left: 2px;
+    position: absolute;
+    top: 2px;
+  }
+  &__number {
+    font: bold 48px sans-serif;
+    color: rgba(0,0,0,.15);
+  }
+}

@@ -1,0 +1,22 @@
+.tile {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  position: relative;
+
+  &--blank {
+    background: #f3f3f3;
+    cursor: default;
+  }
+  &__order {
+    color: #fff;
+    left: 2px;
+    position: absolute;
+    top: 2px;
+  }
+  &__number {
+    font: bold 48px sans-serif;
+    color: rgba(0,0,0,.15);
+  }
+}
