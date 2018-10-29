@@ -2,8 +2,9 @@ import React, { Component } from 'react';
 import './ImagePuzzle.scss';
 import bakfiets from './bakfiets.jpg';
 import Board from './Board';
+import StatusMsg from './StatusMsg';
 import Example from './Example';
-//import Unsplash from 'unsplash-js';
+//import Unsplash from 'unsplash-js'; @see componentDidMount
 import Axios from 'axios';
 
 //get api key 
@@ -44,6 +45,7 @@ class ImagePuzzle extends Component {
     this.state = {
       orderedTiles: this.getTileArray(this.puzzleSize * this.puzzleSize),
       tiles: initialTiles,
+      statusMsg: "Welcome to the Image Puzzle!",
       isSolved: false
     }
 
@@ -84,13 +86,19 @@ class ImagePuzzle extends Component {
   render() {
     return (
       <div className="App">
-          <p className="App__status">Puzzle status: {this.state.isSolved ? "solved" : "in progress"}</p>
+          <StatusMsg statusMsg={this.state.statusMsg} />
           <Board puzzleImg={this.state.image} tiles={this.state.tiles} onClick={(index, value) => this.handleClick(index, value)} tileSize={this.tileSize} puzzleSize={this.puzzleSize} />
           <Example exampleSrc={this.state.image} tileSize={this.tileSize} puzzleSize={this.puzzleSize} />
       </div>
     );
   }
 
+  /**
+   * @function handleClick When a user clicks on a tile, attempts to move it to an
+   * adjacent blank tile, if exists.
+   * @param <Number> arrayPos array index of the tile that was clicked
+   * @param <Object> tile object
+   */
   handleClick(arrayPos, tile) {
     if (tile.isBlank) {
       return;
@@ -118,7 +126,8 @@ class ImagePuzzle extends Component {
 
       this.setState({
         tiles: swappedTiles,
-        isSolved: isPuzzleSolved
+        isSolved: isPuzzleSolved,
+        statusMsg: isPuzzleSolved ? "Success! Puzzle is solved." : "Puzzle in progress. Good Luck!"
       })
     }
   }
@@ -129,15 +138,11 @@ class ImagePuzzle extends Component {
    * @return <Boolean>
    */
   getIsPuzzleSolved(initial, current) {
-    console.log(initial, current);
     for (let i = 0; i < initial.length; i++) {
-      console.log(initial[i].val + " === " + current[i].val);
       if (initial[i].val !== current[i].val) {
-        console.log("\tnot equal");
         return false;
       }
     }
-    console.log("all equal");
     return true;
   }
 
@@ -229,8 +234,7 @@ class ImagePuzzle extends Component {
 
   /**
    * @method getRandomTiles returns an array of 16 object literals of type
-   * { val: <Number>, isBlank: <Boolean> }. The objects are randomly ordered by
-   * val.
+   * { val: <Number>, isBlank: <Boolean> }. The objects are randomly ordered by val.
    */
   getRandomTiles(puzzleSize) {
     const arrLen = puzzleSize * puzzleSize;
