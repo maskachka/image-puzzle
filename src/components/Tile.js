@@ -9,10 +9,10 @@ function Tile(props) {
       style={!props.isBlank ? {
         backgroundImage: "url(" + props.bgImg + ")",
         backgroundPosition: props.bgPos,
-        backgroundSize: (props.tileSize * props.puzzleSize) + 'px ' + (props.tileSize * props.puzzleSize) + 'px'
+        backgroundSize: (props.tileSize * props.puzzleSize) + 'px '
       } : {}}
     >
-      <span className="tile__number">{!props.isBlank ? props.tileNumber : ""}</span>
+      <span className="tile__number">{!props.isBlank ? (props.tileNumber + 1) : ""}</span>
     </div>
   );
 }

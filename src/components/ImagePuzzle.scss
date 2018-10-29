@@ -1,8 +1,13 @@
 .App {
   display: grid;
+
   grid-template-columns: repeat(2, 1fr);
   margin: 20px 0 0 20px;
   text-align: center;
+
+  &__status {
+    grid-column: 1/3;
+  }
 }
 .board {
   border: 1px solid #ddd;

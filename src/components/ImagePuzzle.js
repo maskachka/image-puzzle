@@ -6,6 +6,7 @@ import Example from './Example';
 //import Unsplash from 'unsplash-js';
 import Axios from 'axios';
 
+//get api key 
 let Config = require('Config');
 
 /**
@@ -24,8 +25,11 @@ class ImagePuzzle extends Component {
   constructor(props) {
     super(props);
 
+    this.tileSize = 150;
+    this.puzzleSize = 4;
+
     //TODO maybe refactor, call instead this.getRandomSolvableTiles()
-    let initialTiles = this.getRandomTiles();
+    let initialTiles = this.getRandomTiles(this.puzzleSize);
     let numAttempts = 0;
 
     while (numAttempts < 25) {
@@ -33,55 +37,55 @@ class ImagePuzzle extends Component {
         break;
       }
 
-      initialTiles = this.getRandomTiles();
+      initialTiles = this.getRandomTiles(this.puzzleSize);
       numAttempts++;
     }
 
     this.state = {
-      initialTiles: initialTiles,
-      tiles: initialTiles
+      orderedTiles: this.getTileArray(this.puzzleSize * this.puzzleSize),
+      tiles: initialTiles,
+      isSolved: false
     }
-    this.tileSize = 150;
-    this.puzzleSize = 4;
 
-    //bind 'this'
+    //bind 'this' - 
     this.componentDidMount = this.componentDidMount.bind(this);
     this.handleClick = this.handleClick.bind(this);
     this.swapTiles = this.swapTiles.bind(this);
   }
 
+  /**
+   * @method componentDidMount gets a random image from Unsplash and use it for
+   * the puzzle background.
+   */
   componentDidMount() {
     /**
-      const unsplash = new Unsplash({
-        applicationId: "d440697ad673817d642a5af99230e6c9950f53f1b32b95b106e5a33ea6fafab8",
-        secret: "5d0cfeb4675b39445e268834f1dbc0cbc8e94cf94e8d6d39486b0b883e929bd5",
-        callbackUrl: ""
-      });
-      unsplash.photos.getRandomPhoto({
-        width: 600,
-        height: 600
-      })
-      .then(json => {
-        console.log(json);
-        this.setState({
-          image: json.url
-        });
-      });
+     * TODO: got response type CORS when fetching photos via unsplash-js in local env. 
+     * 1. Figure out if possible to use unsplash-js in local env.
+     * 2. Figure out the whole 'downloading' of image for the purpose of unsplash
+     * view counter incrementation.
     */
 
-    Axios.get('https://api.unsplash.com/photos/random?w=600&h=600&client_id='+Config['unsplash api key']).then((data) => {
-      if (data.data.urls) {
+    Axios.get('https://api.unsplash.com/photos/random?orientation=squarish&w=600&h=600&client_id='+Config['unsplash api key'])
+      .then((data) => {
+        if (data.data.urls) {
+          this.setState({
+            image: data.data.urls.regular
+          });
+        }
+      })
+      .catch((err) => {
+        //default placeholder image
         this.setState({
-          image: data.data.urls.small
+          image: bakfiets
         });
-      }
-    });
+      });
   }
 
   render() {
     return (
       <div className="App">
-          <Board puzzleImg={bakfiets} tiles={this.state.tiles} onClick={(index, value) => this.handleClick(index, value)} tileSize={this.tileSize} puzzleSize={this.puzzleSize} />
+          <p className="App__status">Puzzle status: {this.state.isSolved ? "solved" : "in progress"}</p>
+          <Board puzzleImg={this.state.image} tiles={this.state.tiles} onClick={(index, value) => this.handleClick(index, value)} tileSize={this.tileSize} puzzleSize={this.puzzleSize} />
           <Example exampleSrc={this.state.image} tileSize={this.tileSize} puzzleSize={this.puzzleSize} />
       </div>
     );
@@ -103,28 +107,52 @@ class ImagePuzzle extends Component {
       this.getTileAt(row, col + 1)
     ];
 
+    //filter out invalid tiles and the blank tile.
     neighborTiles = neighborTiles.filter((tile, index) => tile && tile.isBlank);
 
 
     if (neighborTiles.length) {
-      let targetIndex = this.state.tiles.findIndex((item, i) => item === neighborTiles[0]);
-      this.swapTiles(targetIndex, arrayPos);
+      const targetIndex = this.state.tiles.findIndex((item, i) => item === neighborTiles[0]);
+      const swappedTiles = this.swapTiles(this.state.tiles.slice(), targetIndex, arrayPos);
+      const isPuzzleSolved = this.getIsPuzzleSolved(this.state.orderedTiles, swappedTiles);
+
+      this.setState({
+        tiles: swappedTiles,
+        isSolved: isPuzzleSolved
+      })
     }
   }
 
   /**
-   * @method swapTiles swaps src tile with the target tile in the tiles array
-   * @param <Tile> src
-   * @param <Tile> target
+   * @method getIsPuzzleSolved compares ordered array of tiles with current position,
+   * returns true if they match (puzzle solved)
+   * @return <Boolean>
    */
-  swapTiles(src, target) {
-    let tiles = this.state.tiles.slice();
-    const srcTile = tiles[src];
+  getIsPuzzleSolved(initial, current) {
+    console.log(initial, current);
+    for (let i = 0; i < initial.length; i++) {
+      console.log(initial[i].val + " === " + current[i].val);
+      if (initial[i].val !== current[i].val) {
+        console.log("\tnot equal");
+        return false;
+      }
+    }
+    console.log("all equal");
+    return true;
+  }
 
-    tiles[src] = tiles[target];
-    tiles[target] = srcTile;
+  /**
+   * @method swapTiles swaps src tile with the target tile in the tiles array
+   * @param <Tile> srcIndex
+   * @param <Tile> targetIndex
+   */
+  swapTiles(arr, srcIndex, targetIndex) {
+    const srcTile = arr[srcIndex];
 
-    this.setState({tiles: tiles});
+    arr[srcIndex] = arr[targetIndex];
+    arr[targetIndex] = srcTile;
+
+    return arr;
   }
 
   /**
@@ -193,16 +221,25 @@ class ImagePuzzle extends Component {
   }
 
   /**
+   * @method getTileArray returns an array of game tile objects. Helper function.
+   */
+  getTileArray(arrLen) {
+    return Array.from([...new Array(arrLen).keys()], x => ({ val: x, isBlank: x === arrLen - 1 }));
+  }
+
+  /**
    * @method getRandomTiles returns an array of 16 object literals of type
    * { val: <Number>, isBlank: <Boolean> }. The objects are randomly ordered by
    * val.
    */
-  getRandomTiles() {
-    let arr = [...new Array(16).keys()];
-    let currIndex = arr.length;
+  getRandomTiles(puzzleSize) {
+    const arrLen = puzzleSize * puzzleSize;
+    let arr = this.getTileArray(arrLen);
+    let currIndex = arrLen;
     let tempVal;
     let randomIndex;
 
+    //randomize order of tiles
     while (0 !== currIndex) {
       randomIndex = Math.floor(Math.random() * currIndex);
       currIndex -= 1;
@@ -211,13 +248,6 @@ class ImagePuzzle extends Component {
       arr[currIndex] = arr[randomIndex];
       arr[randomIndex] = tempVal;
     }
-
-    arr.forEach(function (el, i) {
-      arr[i] = {
-        val: el,
-        isBlank: el === arr.length - 1
-      };
-    });
 
     return arr;
   }
