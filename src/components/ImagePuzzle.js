@@ -7,19 +7,13 @@ import Example from './Example';
 //import Unsplash from 'unsplash-js'; @see componentDidMount
 import Axios from 'axios';
 
-//get api key 
-let Config = require('Config');
-
-/**
- *
- * What's left:
- * 3. Message when the game is won
- * 4. Refactor and modularize code. Are the single file components in React?
- * 5. Looks like components need to move into their own individual files under src/components
- * 6. What are containers vs components?
- * 8. store unsplash api keys in a separate config file, don't commit to github
- * https://stackoverflow.com/questions/44342276/how-to-push-code-to-github-hiding-the-api-keys
- */
+//get api key.
+//TODO: unit test suite doesn't see the Config API key. Using this workaround for now.
+let Config = {};
+try {
+  Config = require('Config');
+} catch (e) {
+}
 
 class ImagePuzzle extends Component {
 

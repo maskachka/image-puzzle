@@ -494,4 +494,7 @@ module.exports = {
   // Turn off performance processing because we utilize
   // our own hints via the FileSizeReporter
   performance: false,
+  externals: {
+    'Config': JSON.stringify(require('./app.config.json'))
+  },
 };

@@ -15,6 +15,8 @@ const ManifestPlugin = require('webpack-manifest-plugin');
 const getCacheIdentifier = require('react-dev-utils/getCacheIdentifier');
 const ModuleNotFoundPlugin = require('react-dev-utils/ModuleNotFoundPlugin');
 
+console.log("inside dev config");
+
 // Webpack uses `publicPath` to determine where the app is being served from.
 // In development, we always serve from the root. This makes config easier.
 const publicPath = '/';
@@ -393,6 +395,6 @@ module.exports = {
   performance: false,
 
   externals: {
-    'Config': JSON.stringify(mode ? require('./app.config.prod.json') : require('./app.config.dev.json'))
-  }
+    'Config': JSON.stringify(require('./app.config.json'))
+  },
 };
